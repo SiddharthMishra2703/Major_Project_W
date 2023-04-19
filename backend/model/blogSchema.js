@@ -1,4 +1,5 @@
 const mongooose = require('mongoose');
+const {commentSchema} = require("./commentSchema");
 
 const blogSchema = new mongooose.Schema({
     title: {
@@ -12,7 +13,15 @@ const blogSchema = new mongooose.Schema({
     topic: {
         type: String,
         required:true
-    }
+    },
+    likes: {
+        type: Number
+    },
+    date : {
+        type: Date,
+        default: Date.now
+    },
+    comments: [commentSchema]
 })
 
 // collection creation

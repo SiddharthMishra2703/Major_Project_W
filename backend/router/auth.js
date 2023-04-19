@@ -9,6 +9,7 @@ require('../db/conn');
 const User = require("../model/userSchema");
 
 const {blogSchema ,Blog} = require("../model/blogSchema");
+const {commentSchema, Comment} = require("../model/commentSchema");
 
 // router.get('/', (req, res) => {
 //     res.send(`Hello world from the server rotuer js`);
@@ -168,6 +169,7 @@ router.get("/blog/:blogId", async (req, res) =>{
 //delete a blog
 
 router.post("/blogDelete", async (req, res) =>{
+    // res.send("hello");
     const { blogId, userId } = req.body;
 
     if (!blogId || !userId) {
@@ -193,6 +195,87 @@ router.post("/blogDelete", async (req, res) =>{
                 }else{
                     return res.status(422).json({ error: "Deletion unsuccessful" });
                 }
+            }else{
+                return res.status(422).json({ error: "Deletion unsuccessful" });
+            }
+        }else{
+            return res.status(422).json({ error: "Deletion unsuccessful" });
+        }
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+
+//write a comment
+
+router.post("/comment", authenticate, async (req, res) => {
+    const {userId, blogId, comment} = req.body; 
+
+    if(!userId || !blogId || !comment){
+        return res.status(422).json({ error: "all feilds not given" });
+    }
+    try {
+        const blog = await Blog.findOne({_id: blogId});
+        const user = await User.findOne({_id: userId});
+        const name = user.name;
+        const cmt = new Comment({ comment, blogId, userId, userName:name});
+        if(blog && user && cmt){
+            blog.comments.push(cmt);
+            user.comments.push(cmt);
+            done1 = await blog.save();
+            done2 = await user.save();
+            done3 = await cmt.save();
+            if(done1 && done2 && done3){
+                res.send("Comment added successfully")
+            }else{
+                return res.status(422).json({ error: "Unable to add comment" });
+            }
+        }else{
+            return res.status(422).json({ error: "Unable to add comment" });
+        }
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+
+//delete a comment
+
+router.post("/commentDelete", async (req, res) =>{
+    const commentId = req.body.commentId;
+
+    if (!commentId) {
+        return res.status(422).json({ error: "id not given" });
+    }
+    try{
+        const comment = await Comment.findOneAndDelete({_id: commentId});
+        const user = await User.findOne({_id: comment.userId});
+        const blog = await Blog.findOne({_id: comment.blogId});
+        if(user && blog && comment){
+            let i;
+            for(i=0; i<user.comments.length; i++) {
+                if(user.comments[i]._id == commentId){
+                    break;
+                }
+            };
+            if(i == user.comments.length)
+                return res.status(422).json({ error: "Deletion unsuccessful" });
+                user.comments.splice(i, 1);
+                const done1 = await user.save();
+
+            for(i=0; i<blog.comments.length; i++) {
+                if(blog.comments[i]._id == commentId){
+                    break;
+                }
+            };
+            if(i == blog.comments.length)
+                return res.status(422).json({ error: "Deletion unsuccessful" });
+            blog.comments.splice(i, 1);
+            const done2 = await blog.save();
+
+            if(done1 && done2){
+                res.send("Deletion Successful");
             }else{
                 return res.status(422).json({ error: "Deletion unsuccessful" });
             }

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const mongooose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const {blogSchema ,Blog} = require('./blogSchema');
+const {commentSchema} = require("./commentSchema");
 
 const userSchema = new mongooose.Schema({
     name: {
@@ -32,7 +33,8 @@ const userSchema = new mongooose.Schema({
         type: Date,
         default:Date.now
     },
-    blogs: [blogSchema], 
+    blogs: [blogSchema],
+    comments: [commentSchema], 
     tokens: [
         {
             token: {
