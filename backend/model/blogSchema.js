@@ -15,8 +15,10 @@ const blogSchema = new mongooose.Schema({
         required:true
     },
     likes: {
-        type: Number
+        type: Number,
+        default: 0
     },
+    likedUsers: [],
     date : {
         type: Date,
         default: Date.now

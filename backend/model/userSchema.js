@@ -34,7 +34,8 @@ const userSchema = new mongooose.Schema({
         default:Date.now
     },
     blogs: [blogSchema],
-    comments: [commentSchema], 
+    comments: [commentSchema],
+    likedBlogs: [], 
     tokens: [
         {
             token: {

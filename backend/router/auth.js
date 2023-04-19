@@ -287,5 +287,48 @@ router.post("/commentDelete", async (req, res) =>{
     }
 });
 
+
+
+router.post("/like", async (req, res) => {
+    const {blogId, userId} = req.body;
+    const blog = await Blog.findOne({_id : blogId});
+    const user = await User.findOne({_id : userId});
+    if(user && blog){
+        if(blog.likes == 0){
+            blog.likes++;
+            user.likedBlogs.push(blogId);
+            blog.likedUsers.push(userId);
+            user.save();
+            blog.save();
+            res.send("liked");
+            return 0;
+        }
+        let i;
+        for(i=0; i<user.likedBlogs.length; i++){
+            if(user.likedBlogs[i] == blogId){
+                break;
+            }
+        }
+        if(i == user.likedBlogs.length){
+            blog.likes++;
+            blog.likedUsers.push(userId);
+            user.likedBlogs.push(blogId);
+            user.save();
+            blog.save();
+            res.send("liked");
+        }else{
+            blog.likes--;
+            const index = blog.likedUsers.indexOf(userId);
+            blog.likedUsers.splice(index, 1);
+            user.likedBlogs.splice(i, 1);
+            user.save();
+            blog.save();
+            res.send("disliked");
+        }
+    }else{
+        return res.status(422).json({ error: "not able to like" });
+    }
+});
+
 module.exports = router;
 
