@@ -288,47 +288,98 @@ router.post("/commentDelete", async (req, res) =>{
 });
 
 
+// like/dislike a blog
 
-router.post("/like", async (req, res) => {
+router.post("/like", authenticate, async (req, res) => {
     const {blogId, userId} = req.body;
-    const blog = await Blog.findOne({_id : blogId});
-    const user = await User.findOne({_id : userId});
-    if(user && blog){
-        if(blog.likes == 0){
-            blog.likes++;
-            user.likedBlogs.push(blogId);
-            blog.likedUsers.push(userId);
-            user.save();
-            blog.save();
-            res.send("liked");
-            return 0;
-        }
-        let i;
-        for(i=0; i<user.likedBlogs.length; i++){
-            if(user.likedBlogs[i] == blogId){
-                break;
+    if (!blogId || !userId) {
+        return res.status(422).json({ error: "id not given" });
+    }
+    try{
+        const blog = await Blog.findOne({_id : blogId});
+        const user = await User.findOne({_id : userId});
+        if(user && blog){
+            if(blog.likes == 0){
+                blog.likes++;
+                user.likedBlogs.push(blogId);
+                blog.likedUsers.push(userId);
+                user.save();
+                blog.save();
+                res.send("liked");
+                return 0;
             }
-        }
-        if(i == user.likedBlogs.length){
-            blog.likes++;
-            blog.likedUsers.push(userId);
-            user.likedBlogs.push(blogId);
-            user.save();
-            blog.save();
-            res.send("liked");
+            let i;
+            for(i=0; i<user.likedBlogs.length; i++){
+                if(user.likedBlogs[i] == blogId){
+                    break;
+                }
+            }
+            if(i == user.likedBlogs.length){
+                blog.likes++;
+                blog.likedUsers.push(userId);
+                user.likedBlogs.push(blogId);
+                user.save();
+                blog.save();
+                res.send("liked");
+            }else{
+                blog.likes--;
+                const index = blog.likedUsers.indexOf(userId);
+                blog.likedUsers.splice(index, 1);
+                user.likedBlogs.splice(i, 1);
+                user.save();
+                blog.save();
+                res.send("disliked");
+            }
         }else{
-            blog.likes--;
-            const index = blog.likedUsers.indexOf(userId);
-            blog.likedUsers.splice(index, 1);
-            user.likedBlogs.splice(i, 1);
-            user.save();
-            blog.save();
-            res.send("disliked");
+            return res.status(422).json({ error: "not able to like" });
         }
-    }else{
-        return res.status(422).json({ error: "not able to like" });
+    }catch (err) {
+        console.log(err);
     }
 });
+
+
+//user deletion 
+
+router.post("/userDelete", async (req, res) => {
+    const userId = req.body.userId;
+    if (!userId) {
+        return res.status(422).json({ error: "id not given" });
+    }
+    try{
+        const user = await User.findOneAndDelete({_id : userId});
+        if(user){
+            user.blogs.forEach(async blog => {
+                await Blog.deleteOne({_id : blog._id});
+            });
+            user.comments.forEach(async comment => {
+                await Comment.deleteOne({_id : comment._id});
+            });
+            res.send("Deletion successfull");
+        }else{
+            return res.status(422).json({ error: "Deletion unsuccessful" });
+        }
+    }catch (err) {
+        console.log(err);
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;
 
