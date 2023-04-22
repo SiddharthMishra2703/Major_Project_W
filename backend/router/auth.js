@@ -210,7 +210,8 @@ router.post("/blogDelete", async (req, res) =>{
 //write a comment
 
 router.post("/comment", authenticate, async (req, res) => {
-    const {userId, blogId, comment} = req.body; 
+    const {blogId, comment} = req.body; 
+    const userId = req.userID;
 
     if(!userId || !blogId || !comment){
         return res.status(422).json({ error: "all feilds not given" });
@@ -291,7 +292,8 @@ router.post("/commentDelete", async (req, res) =>{
 // like/dislike a blog
 
 router.post("/like", authenticate, async (req, res) => {
-    const {blogId, userId} = req.body;
+    const blogId = req.body.blogId;
+    const userId = req.userID;
     if (!blogId || !userId) {
         return res.status(422).json({ error: "id not given" });
     }
