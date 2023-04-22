@@ -365,19 +365,43 @@ router.post("/userDelete", async (req, res) => {
 });
 
 
+// edit a blog
 
-
-
-
-
-
-
-
-
-
-
-
-
+router.post("/editBlog", authenticate, async (req, res) => {
+    const {blogId, title, content, topic} = req.body;
+    if (!blogId || !title || !content || !topic) {
+        return res.status(422).json({ error: "id not given" });
+    }
+    try{
+        const blog = await Blog.findOne({_id: blogId});
+        const user = req.rootUser;
+        if(blog){
+            blog.title = title;
+            blog.content = content;
+            blog.topic = topic;
+            const done1 = await blog.save();
+            let i;
+            for(i = 0; i<user.blogs.length; i++){
+                if(user.blogs[i]._id == blogId){
+                    break;
+                }
+            }
+            user.blogs[i].title = title;
+            user.blogs[i].content = content;
+            user.blogs[i].topic = topic;
+            const done2 = await user.save();
+            if(done1 && done2){
+                res.send("blog edit successfull");
+            }else{
+                return res.status(422).json({ error: "blog edit unsuccessfull" });
+            }
+        }else{
+            return res.status(422).json({ error: "No blog found with this id" });
+        }
+    } catch (err) {
+        console.log(err);
+    }
+});
 
 
 
