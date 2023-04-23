@@ -407,6 +407,27 @@ router.post("/editBlog", authenticate, async (req, res) => {
 });
 
 
+// for user authentication on readblog route
+
+router.get("/authenticate/:blogId", authenticate, async (req, res) => {
+    const comments = req.rootUser.comments;
+    const blogs = req.rootUser.blogs;
+    const commentIds = [];
+    const userId = req.userID;
+    const blogId = req.params.blogId;
+    for(let i=0; i<comments.length; i++){
+        commentIds.push(comments[i]._id);
+    }
+    let blog = 0;
+    for(i=0;i<blogs.length;i++){
+        if(blogs[i]._id == blogId){
+            blog = 1;
+            break;
+        }
+    }
+    res.send({commentIds : commentIds, userId : userId, blog : blog});
+});
+
 
 module.exports = router;
 
