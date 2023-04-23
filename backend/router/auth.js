@@ -168,9 +168,10 @@ router.get("/blog/:blogId", async (req, res) =>{
 
 //delete a blog
 
-router.post("/blogDelete", async (req, res) =>{
+router.post("/blogDelete", authenticate, async (req, res) =>{
     // res.send("hello");
-    const { blogId, userId } = req.body;
+    const blogId = req.body.blogId;
+    const userId = req.userID;
 
     if (!blogId || !userId) {
         return res.status(422).json({ error: "id not given" });
