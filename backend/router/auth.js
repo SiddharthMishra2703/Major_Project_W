@@ -88,7 +88,7 @@ router.post('/signin', async (req, res) => {
 
 // dashboard route 
 
-router.get('/Dashboard', authenticate ,(req, res) => {
+router.get('/daashboard', authenticate ,(req, res) => {
     res.send(req.rootUser);
 });
 
@@ -169,7 +169,6 @@ router.get("/blog/:blogId", async (req, res) =>{
 //delete a blog
 
 router.post("/blogDelete", authenticate, async (req, res) =>{
-    // res.send("hello");
     const blogId = req.body.blogId;
     const userId = req.userID;
 
@@ -192,7 +191,7 @@ router.post("/blogDelete", authenticate, async (req, res) =>{
             if(done){
                 const blog = await Blog.deleteOne({_id: blogId});
                 if(blog){
-                    res.send("Successfully deleted the corresponding blog.");
+                    res.json({ message: "Successfully deleted the corresponding blog."});
                 }else{
                     return res.status(422).json({ error: "Deletion unsuccessful" });
                 }
@@ -229,7 +228,7 @@ router.post("/comment", authenticate, async (req, res) => {
             done2 = await user.save();
             done3 = await cmt.save();
             if(done1 && done2 && done3){
-                res.send("Comment added successfully")
+                res.json({ message: "Comment added successfully"});
             }else{
                 return res.status(422).json({ error: "Unable to add comment" });
             }
@@ -277,7 +276,7 @@ router.post("/commentDelete", async (req, res) =>{
             const done2 = await blog.save();
 
             if(done1 && done2){
-                res.send("Deletion Successful");
+                res.json({ message: "Deletion Successful"});
             }else{
                 return res.status(422).json({ error: "Deletion unsuccessful" });
             }
@@ -308,7 +307,7 @@ router.post("/like", authenticate, async (req, res) => {
                 blog.likedUsers.push(userId);
                 user.save();
                 blog.save();
-                res.send("liked");
+                res.json({ message: "liked"});
                 return 0;
             }
             let i;
@@ -323,7 +322,7 @@ router.post("/like", authenticate, async (req, res) => {
                 user.likedBlogs.push(blogId);
                 user.save();
                 blog.save();
-                res.send("liked");
+                res.json({ message: "liked"});
             }else{
                 blog.likes--;
                 const index = blog.likedUsers.indexOf(userId);
@@ -331,7 +330,7 @@ router.post("/like", authenticate, async (req, res) => {
                 user.likedBlogs.splice(i, 1);
                 user.save();
                 blog.save();
-                res.send("disliked");
+                res.json({ message: "disliked"});
             }
         }else{
             return res.status(422).json({ error: "not able to like" });
@@ -358,7 +357,7 @@ router.post("/userDelete", async (req, res) => {
             user.comments.forEach(async comment => {
                 await Comment.deleteOne({_id : comment._id});
             });
-            res.send("Deletion successfull");
+            res.json({ message: "Deletion successfull"});
         }else{
             return res.status(422).json({ error: "Deletion unsuccessful" });
         }
@@ -394,7 +393,7 @@ router.post("/editBlog", authenticate, async (req, res) => {
             user.blogs[i].topic = topic;
             const done2 = await user.save();
             if(done1 && done2){
-                res.send("blog edit successfull");
+                res.json({ message: "blog edit successfull"});
             }else{
                 return res.status(422).json({ error: "blog edit unsuccessfull" });
             }
